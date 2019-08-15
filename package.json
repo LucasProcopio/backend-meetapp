@@ -1,0 +1,26 @@
+{
+  "name": "lumeet-app",
+  "version": "1.0.0",
+  "description": "A Meet Up app",
+  "main": "index.js",
+  "repository": "https://github.com/LucasProcopio/lumeet-app.git",
+  "author": "Lucas Henrique Procopio <procmode.dev@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-prettier": "^3.1.0",
+    "nodemon": "^1.19.1",
+    "prettier": "^1.18.2",
+    "sequelize-cli": "^5.5.0",
+    "sucrase": "^3.10.1"
+  }
+}
