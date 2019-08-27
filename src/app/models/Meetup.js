@@ -4,20 +4,12 @@ class Meetup extends Model {
   static init(sequelize) {
     super.init(
       {
-        user_id: Sequelize.INTEGER,
         title: Sequelize.STRING,
         description: Sequelize.STRING,
         city: Sequelize.STRING,
         state: Sequelize.STRING,
         address: Sequelize.STRING,
         date: Sequelize.DATE,
-        banner: Sequelize.STRING,
-        banner_url: {
-          type: Sequelize.VIRTUAL,
-          get() {
-            return `http://localhost:3333/meetup/banner/${this.banner}`;
-          },
-        },
       },
       {
         sequelize,
@@ -25,6 +17,11 @@ class Meetup extends Model {
     );
 
     return this;
+  }
+
+  static associate(models) {
+    this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
+    this.belongsTo(models.File, { foreignKey: 'file_id', as: 'banner' });
   }
 }
 
