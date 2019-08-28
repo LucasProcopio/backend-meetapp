@@ -13,6 +13,7 @@ class User extends Model {
       },
       {
         sequelize,
+        tableName: 'users',
       }
     );
 
@@ -24,6 +25,10 @@ class User extends Model {
 
     return this;
   }
+
+  // static associate(models) {
+  //   this.belongsTo(models.Meetup, { foreignKey: 'user_id', as: 'meetup' });
+  // }
 
   comparePassword(password) {
     return bcrypt.compare(password, this.password_hash);
