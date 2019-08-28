@@ -4,20 +4,9 @@ import { promisify } from 'util';
 import { isBefore, parseISO } from 'date-fns';
 
 import Meetup from '../models/Meetup';
-import File from '../models/File';
 
 class MeetupController {
   async store(req, res) {
-    const { originalname: name, filename: path } = req.file;
-    const { date } = req.body;
-
-    if (isBefore(parseISO(date), new Date())) {
-      await promisify(fs.unlink)(req.file.path);
-      return res.status(401).json({
-        error: 'The date cannot be in the past unless you use a timemachine ;)',
-      });
-    }
-
     const schema = Yup.object().shape({
       title: Yup.string().required(),
       description: Yup.string().required(),
@@ -28,29 +17,86 @@ class MeetupController {
         str => str.length === 2
       ),
       address: Yup.string().required(),
+      file_id: Yup.number().required(),
       date: Yup.date().required(),
-      name: Yup.string().required(),
-      path: Yup.string().required(),
     });
 
-    if (!(await schema.isValid({ ...req.body, name, path }))) {
+    /**
+     * Schema validation
+     */
+    if (!(await schema.isValid(req.body))) {
       await promisify(fs.unlink)(req.file.path);
 
       return res.status(401).json({ error: 'The data is not valid!' });
     }
 
-    const { id: fileId } = await File.create({
-      name,
-      path,
-    });
+    /**
+     * Past date validation
+     */
+    if (isBefore(parseISO(req.body.date), new Date())) {
+      await promisify(fs.unlink)(req.file.path);
+
+      return res.status(401).json({
+        error: 'The date cannot be in the past unless you use a timemachine ;)',
+      });
+    }
 
     const meetupData = await Meetup.create({
       ...req.body,
       user_id: req.userId,
-      file_id: fileId,
     });
 
     return res.json(meetupData);
+  }
+
+  async update(req, res) {
+    const schema = Yup.object().shape({
+      title: Yup.string(),
+      description: Yup.string(),
+      city: Yup.string(),
+      state: Yup.string().max(2),
+      address: Yup.string(),
+      file_id: Yup.number(),
+      date: Yup.date(),
+    });
+
+    /**
+     *  Date validation
+     */
+    if (isBefore(parseISO(req.body.date), new Date())) {
+      return res
+        .status(400)
+        .json({ error: 'You cannot set the meetup date to the past' });
+    }
+
+    /**
+     * Schema validation
+     */
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'The date is not valid' });
+    }
+
+    /**
+     * Meetup update authorization
+     */
+    const meetup = await Meetup.findByPk(req.params.id);
+    if (req.userId !== meetup.user_id) {
+      return res
+        .status(400)
+        .json({ error: 'Not authorized to update this meetup' });
+    }
+
+    /**
+     * Past date validation
+     */
+    if (meetup.past_date) {
+      return res.status(400).json({
+        error: 'You cannot update a past event',
+      });
+    }
+
+    const updatedData = await meetup.update(req.body);
+    return res.json(updatedData);
   }
 }
 
