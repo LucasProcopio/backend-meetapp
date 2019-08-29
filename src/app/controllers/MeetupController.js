@@ -1,8 +1,6 @@
 import * as Yup from 'yup';
-import fs from 'fs';
-import { promisify } from 'util';
 import { Op } from 'sequelize';
-import { isBefore, parseISO, startOfDay, endOfDay } from 'date-fns';
+import { isBefore, parseISO, startOfDay, endOfDay, subHours } from 'date-fns';
 
 import Meetup from '../models/Meetup';
 import User from '../models/User';
@@ -66,8 +64,6 @@ class MeetupController {
      * Schema validation
      */
     if (!(await schema.isValid(req.body))) {
-      await promisify(fs.unlink)(req.file.path);
-
       return res.status(401).json({ error: 'The data is not valid!' });
     }
 
@@ -75,8 +71,6 @@ class MeetupController {
      * Past date validation
      */
     if (isBefore(parseISO(req.body.date), new Date())) {
-      await promisify(fs.unlink)(req.file.path);
-
       return res.status(401).json({
         error: 'The date cannot be in the past unless you use a timemachine ;)',
       });
@@ -123,7 +117,7 @@ class MeetupController {
     const meetup = await Meetup.findByPk(req.params.id);
     if (req.userId !== meetup.user_id) {
       return res
-        .status(400)
+        .status(401)
         .json({ error: 'Not authorized to update this meetup' });
     }
 
@@ -138,6 +132,38 @@ class MeetupController {
 
     const updatedData = await meetup.update(req.body);
     return res.json(updatedData);
+  }
+
+  async delete(req, res) {
+    const meetup = await Meetup.findByPk(req.params.id);
+
+    /**
+     * User authorization
+     */
+    if (meetup.user_id !== req.userId) {
+      return res.status(401).json({ error: 'Not authorized' });
+    }
+
+    /**
+     * past meetups cancelation validation
+     */
+    if (meetup.past_date) {
+      return res.status(400).json({ error: 'Cannot cancel past meetups' });
+    }
+
+    /**
+     * Validation to delete only meetups with more than 24 hours in advance
+     */
+    const subDate = subHours(meetup.date, 24);
+    if (isBefore(subDate, new Date())) {
+      return res.status(401).json({
+        error: 'You can only cancel meetups 24 Hours in advance.',
+      });
+    }
+
+    const deleted = await Meetup.destroy({ where: { id: meetup.id } });
+
+    return res.json(deleted);
   }
 }
 
