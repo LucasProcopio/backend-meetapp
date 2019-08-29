@@ -1,21 +1,62 @@
 import * as Yup from 'yup';
 import fs from 'fs';
 import { promisify } from 'util';
-import { isBefore, parseISO } from 'date-fns';
+import { Op } from 'sequelize';
+import { isBefore, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 import Meetup from '../models/Meetup';
+import User from '../models/User';
+import File from '../models/File';
 
 class MeetupController {
+  async index(req, res) {
+    const { page = 1 } = req.query;
+    const perpage = 10;
+    const where = {};
+
+    if (req.query.date) {
+      const date = parseISO(req.query.date);
+
+      where.date = {
+        [Op.between]: [startOfDay(date), endOfDay(date)],
+      };
+    }
+
+    const meetup = await Meetup.findAll({
+      where,
+      order: ['date'],
+      attributes: [
+        'id',
+        'title',
+        'description',
+        'city',
+        'state',
+        'address',
+        'date',
+      ],
+      limit: perpage,
+      offset: (page - 1) * perpage,
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'name', 'email'],
+        },
+        {
+          model: File,
+          attributes: ['url', 'name', 'path'],
+          as: 'banner',
+        },
+      ],
+    });
+    return res.json(meetup);
+  }
+
   async store(req, res) {
     const schema = Yup.object().shape({
       title: Yup.string().required(),
       description: Yup.string().required(),
       city: Yup.string().required(),
-      state: Yup.string().test(
-        'length',
-        'Must be exactly 2 characters',
-        str => str.length === 2
-      ),
+      state: Yup.string().min(2),
       address: Yup.string().required(),
       file_id: Yup.number().required(),
       date: Yup.date().required(),
