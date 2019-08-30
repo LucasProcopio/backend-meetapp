@@ -26,9 +26,10 @@ class User extends Model {
     return this;
   }
 
-  // static associate(models) {
-  //   this.belongsTo(models.Meetup, { foreignKey: 'user_id', as: 'meetup' });
-  // }
+  static associate(models) {
+    this.hasMany(models.Meetup, { foreignKey: 'user_id' });
+    this.hasMany(models.Subscription, { foreignKey: 'user_id' });
+  }
 
   comparePassword(password) {
     return bcrypt.compare(password, this.password_hash);

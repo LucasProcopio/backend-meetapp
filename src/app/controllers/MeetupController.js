@@ -1,21 +1,60 @@
 import * as Yup from 'yup';
-import fs from 'fs';
-import { promisify } from 'util';
-import { isBefore, parseISO } from 'date-fns';
+import { Op } from 'sequelize';
+import { isBefore, parseISO, startOfDay, endOfDay, subHours } from 'date-fns';
 
 import Meetup from '../models/Meetup';
+import User from '../models/User';
+import File from '../models/File';
 
 class MeetupController {
+  async index(req, res) {
+    const { page = 1 } = req.query;
+    const perpage = 10;
+    const where = {};
+
+    if (req.query.date) {
+      const date = parseISO(req.query.date);
+
+      where.date = {
+        [Op.between]: [startOfDay(date), endOfDay(date)],
+      };
+    }
+
+    const meetup = await Meetup.findAll({
+      where,
+      order: ['date'],
+      attributes: [
+        'id',
+        'title',
+        'description',
+        'city',
+        'state',
+        'address',
+        'date',
+      ],
+      limit: perpage,
+      offset: (page - 1) * perpage,
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'name', 'email'],
+        },
+        {
+          model: File,
+          attributes: ['url', 'name', 'path'],
+          as: 'banner',
+        },
+      ],
+    });
+    return res.json(meetup);
+  }
+
   async store(req, res) {
     const schema = Yup.object().shape({
       title: Yup.string().required(),
       description: Yup.string().required(),
       city: Yup.string().required(),
-      state: Yup.string().test(
-        'length',
-        'Must be exactly 2 characters',
-        str => str.length === 2
-      ),
+      state: Yup.string().min(2),
       address: Yup.string().required(),
       file_id: Yup.number().required(),
       date: Yup.date().required(),
@@ -25,8 +64,6 @@ class MeetupController {
      * Schema validation
      */
     if (!(await schema.isValid(req.body))) {
-      await promisify(fs.unlink)(req.file.path);
-
       return res.status(401).json({ error: 'The data is not valid!' });
     }
 
@@ -34,8 +71,6 @@ class MeetupController {
      * Past date validation
      */
     if (isBefore(parseISO(req.body.date), new Date())) {
-      await promisify(fs.unlink)(req.file.path);
-
       return res.status(401).json({
         error: 'The date cannot be in the past unless you use a timemachine ;)',
       });
@@ -82,7 +117,7 @@ class MeetupController {
     const meetup = await Meetup.findByPk(req.params.id);
     if (req.userId !== meetup.user_id) {
       return res
-        .status(400)
+        .status(401)
         .json({ error: 'Not authorized to update this meetup' });
     }
 
@@ -97,6 +132,38 @@ class MeetupController {
 
     const updatedData = await meetup.update(req.body);
     return res.json(updatedData);
+  }
+
+  async delete(req, res) {
+    const meetup = await Meetup.findByPk(req.params.id);
+
+    /**
+     * User authorization
+     */
+    if (meetup.user_id !== req.userId) {
+      return res.status(401).json({ error: 'Not authorized' });
+    }
+
+    /**
+     * past meetups cancelation validation
+     */
+    if (meetup.past_date) {
+      return res.status(400).json({ error: 'Cannot cancel past meetups' });
+    }
+
+    /**
+     * Validation to delete only meetups with more than 24 hours in advance
+     */
+    const subDate = subHours(meetup.date, 24);
+    if (isBefore(subDate, new Date())) {
+      return res.status(401).json({
+        error: 'You can only cancel meetups 24 Hours in advance.',
+      });
+    }
+
+    const deleted = await Meetup.destroy({ where: { id: meetup.id } });
+
+    return res.json(deleted);
   }
 }
 

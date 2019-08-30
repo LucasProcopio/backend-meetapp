@@ -5,8 +5,6 @@ class Meetup extends Model {
   static init(sequelize) {
     super.init(
       {
-        user_id: Sequelize.INTEGER,
-        file_id: Sequelize.INTEGER,
         title: Sequelize.STRING,
         description: Sequelize.STRING,
         city: Sequelize.STRING,
@@ -22,7 +20,7 @@ class Meetup extends Model {
       },
       {
         sequelize,
-        tableName: 'meetup',
+        tableName: 'meetups',
       }
     );
 
@@ -31,7 +29,8 @@ class Meetup extends Model {
 
   static associate(models) {
     this.belongsTo(models.User, { foreignKey: 'user_id' });
-    this.belongsTo(models.File, { foreignKey: 'file_id' });
+    this.belongsTo(models.File, { foreignKey: 'file_id', as: 'banner' });
+    this.hasMany(models.Subscription, { foreignKey: 'meetup_id' });
   }
 }
 
