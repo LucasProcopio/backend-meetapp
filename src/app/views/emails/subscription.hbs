@@ -1,0 +1,17 @@
+<div class="mail-header">
+  <h1>New meetup Subscription!</h1>
+</div>
+<div class="mail-body">
+  <div class="meetup-info">
+    <h2>{{meetupTitle}}</h2>
+  </div>
+  <ul class="sub-info">
+    <li>User: {{ name }}</li>
+    <li>E-mail: {{ email }}</li>
+    <li>Subscription date: {{ subsDate }}</li>
+  </ul>
+</div>
+<div class="mail-footer">
+  <p>Total subscriptions for this meetup: {{ totalSubs }}</p>
+  <p>{{ daysRemainingInfo }}</p>
+</div>
