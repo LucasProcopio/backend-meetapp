@@ -1,11 +1,47 @@
-import { differenceInCalendarDays } from 'date-fns';
+import { differenceInCalendarDays, subDays } from 'date-fns';
+import { Op } from 'sequelize';
+
 import Meetup from '../models/Meetup';
 import Subscription from '../models/Subscription';
-import Queue from '../../lib/Queue';
 import User from '../models/User';
+import File from '../models/File';
+
+import Queue from '../../lib/Queue';
 import SubscriptionMail from '../jobs/SubscriptionMail';
 
 class SubscriptionController {
+  async index(req, res) {
+    /**
+     * Meetups subscription list
+     */
+    const subscriptions = await Meetup.findAll({
+      where: { date: { [Op.gte]: subDays(new Date(), 1) } },
+      attributes: [
+        'title',
+        'description',
+        'city',
+        'state',
+        'address',
+        'date',
+        'file_id',
+      ],
+      order: ['date'],
+      include: [
+        {
+          model: Subscription,
+          where: { user_id: req.userId },
+        },
+        {
+          model: File,
+          attributes: ['url', 'path'],
+          as: 'banner',
+        },
+      ],
+    });
+
+    return res.json(subscriptions);
+  }
+
   async store(req, res) {
     const meetup = await Meetup.findByPk(req.params.id, {
       include: [
