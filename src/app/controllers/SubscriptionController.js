@@ -1,8 +1,9 @@
-import { format, differenceInCalendarDays, parseISO } from 'date-fns';
+import { differenceInCalendarDays } from 'date-fns';
 import Meetup from '../models/Meetup';
 import Subscription from '../models/Subscription';
-import Mail from '../../lib/Mail';
+import Queue from '../../lib/Queue';
 import User from '../models/User';
+import SubscriptionMail from '../jobs/SubscriptionMail';
 
 class SubscriptionController {
   async store(req, res) {
@@ -102,21 +103,16 @@ class SubscriptionController {
       daysRemaining > 0
         ? `Meetup countdown: ${daysRemaining} days remaining.`
         : 'The meetup happens today!!!';
+
     /**
-     * Send subscription email
+     * E-mail dispatcher using Queues
      */
-    await Mail.sendMail({
-      to: `${meetup.User.name} <${meetup.User.email}>`,
-      subject: `New meetup subscription`,
-      template: 'subscription',
-      context: {
-        meetupTitle: meetup.title,
-        name,
-        email,
-        subsDate: format(new Date(), "MMM', 'do yyyy' At: 'HH':'MM"),
-        totalSubs,
-        daysRemainingInfo,
-      },
+    await Queue.add(SubscriptionMail.key, {
+      meetup,
+      name,
+      email,
+      totalSubs,
+      daysRemainingInfo,
     });
 
     return res.json(subscription);
