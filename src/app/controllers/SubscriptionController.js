@@ -16,15 +16,7 @@ class SubscriptionController {
      */
     const subscriptions = await Meetup.findAll({
       where: { date: { [Op.gte]: subDays(new Date(), 1) } },
-      attributes: [
-        'title',
-        'description',
-        'city',
-        'state',
-        'address',
-        'date',
-        'file_id',
-      ],
+      attributes: ['title', 'description', 'location', 'date', 'file_id'],
       order: ['date'],
       include: [
         {

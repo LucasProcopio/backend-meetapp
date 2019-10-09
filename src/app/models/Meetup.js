@@ -7,9 +7,7 @@ class Meetup extends Model {
       {
         title: Sequelize.STRING,
         description: Sequelize.STRING,
-        city: Sequelize.STRING,
-        state: Sequelize.STRING,
-        address: Sequelize.STRING,
+        location: Sequelize.STRING,
         date: Sequelize.DATE,
         past_date: {
           type: Sequelize.VIRTUAL,

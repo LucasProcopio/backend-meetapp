@@ -15,15 +15,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      city: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      state: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      address: {
+      location: {
         type: Sequelize.STRING,
         allowNull: false,
       },

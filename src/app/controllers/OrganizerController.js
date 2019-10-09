@@ -9,15 +9,7 @@ class OrganizerContoller {
         user_id: req.userId,
       },
       order: ['date'],
-      attributes: [
-        'id',
-        'title',
-        'description',
-        'city',
-        'state',
-        'address',
-        'date',
-      ],
+      attributes: ['id', 'title', 'description', 'location', 'date'],
       include: [
         {
           model: User,

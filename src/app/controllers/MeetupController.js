@@ -23,15 +23,7 @@ class MeetupController {
     const meetup = await Meetup.findAll({
       where,
       order: ['date'],
-      attributes: [
-        'id',
-        'title',
-        'description',
-        'city',
-        'state',
-        'address',
-        'date',
-      ],
+      attributes: ['id', 'title', 'description', 'location', 'date'],
       limit: perpage,
       offset: (page - 1) * perpage,
       include: [
@@ -53,9 +45,7 @@ class MeetupController {
     const schema = Yup.object().shape({
       title: Yup.string().required(),
       description: Yup.string().required(),
-      city: Yup.string().required(),
-      state: Yup.string().min(2),
-      address: Yup.string().required(),
+      location: Yup.string().required(),
       file_id: Yup.number().required(),
       date: Yup.date().required(),
     });
@@ -88,9 +78,7 @@ class MeetupController {
     const schema = Yup.object().shape({
       title: Yup.string(),
       description: Yup.string(),
-      city: Yup.string(),
-      state: Yup.string().max(2),
-      address: Yup.string(),
+      location: Yup.string(),
       file_id: Yup.number(),
       date: Yup.date(),
     });
