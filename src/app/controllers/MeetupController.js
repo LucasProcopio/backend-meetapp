@@ -33,7 +33,7 @@ class MeetupController {
         },
         {
           model: File,
-          attributes: ['url', 'name', 'path'],
+          attributes: ['id', 'url', 'name', 'path'],
           as: 'banner',
         },
       ],
@@ -54,7 +54,10 @@ class MeetupController {
      * Schema validation
      */
     if (!(await schema.isValid(req.body))) {
-      return res.status(401).json({ error: 'The data is not valid!' });
+      return res.status(401).json({
+        error:
+          'The data is not valid!, make sure all fields are filled correctly',
+      });
     }
 
     /**

@@ -17,7 +17,7 @@ class OrganizerContoller {
         },
         {
           model: File,
-          attributes: ['url', 'name', 'path'],
+          attributes: ['id', 'url', 'name', 'path'],
           as: 'banner',
         },
       ],
