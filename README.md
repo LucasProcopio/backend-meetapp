@@ -7,14 +7,41 @@
 ### Installation
 
 - Download or clone this repository
-- At the root folder of this project run the followin command `npm install` or `yarn` to install all dependencies
 - This app was created using **[docker](https://www.docker.com/)**
   - install docker and create containers before starting
   - create a postgres and redis:alpine containers
-- create a **.env** file at the root folder of the application and set all the required values before running the app
+  
+---
+  
+### Docker
+
+  - to create a redis:alpine container run 
+  
+  ```sh 
+  docker run --name redismeetup -p 6379:6379 -d -t redis:alpine
+  ```
+  
+  - to create a postgres database container run
+  
+  ```sh
+  docker run --name database -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres
+  ```
+  
+- create a **.env** file at the root folder of the application and set all the values before running the app
   there is a **.env_example** file to follow along
-- Start the server by running `yarn dev` or `npm dev`
-- Start the mailing server by running `yarn queue` or `npm queue`
+
+### Usage
+
+- before starting the application run the command below to install all dependencies
+
+```sh
+yarn
+```
+
+- create a **database** with the same name set in the `.env` file make sure you use encoding UTF8
+  - run yarn sequelize db:migrate
+- Start the server by running `yarn dev`
+- Start the mailing server by running `yarn queue`
 
 ---
 
