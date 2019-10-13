@@ -12,7 +12,7 @@
   - install docker and create containers before starting
   - create a postgres and redis:alpine containers
 - create a **.env** file at the root folder of the application and set all the required values before running the app
-  there is a **.env_example** file
+  there is a **.env_example** file to follow along
 - Start the server by running `yarn dev` or `npm dev`
 - Start the mailing server by running `yarn queue` or `npm queue`
 
@@ -25,7 +25,7 @@ The following endpoints are available:
 | **Endpoints**            |            **Usage**            |                                                      **Params**                                                      |
 | :----------------------- | :-----------------------------: | :------------------------------------------------------------------------------------------------------------------: |
 | `POST /users`            |          Create users           |                                          **name**, **email**, **password**                                           |
-| `PUT /users`             |     Update logged user data     |  _optional:_ **name**, **email**, _required to change password:_ **oldPassword**, **password**, **confirmPassword**  |
+| `PUT /users`             |     Update logged user data     |  _optional:_   **name**, **email**   _required to change password:_ **oldPassword**, **password**, **confirmPassword**  |
 | `POST /session`          | Create a user session **login** |                                               **email**, **password**                                                |
 | `POST /files`            |      Upload an image file       |                                              file: multipart forma data                                              |
 | `GET /meetups/organizer` |  Get list of organizer meetups  |                                                                                                                      |
