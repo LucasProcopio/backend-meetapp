@@ -1,4 +1,9 @@
-import { differenceInCalendarDays, subDays } from 'date-fns';
+import {
+  differenceInCalendarDays,
+  subDays,
+  isBefore,
+  subHours,
+} from 'date-fns';
 import { Op } from 'sequelize';
 
 import Meetup from '../models/Meetup';
@@ -148,6 +153,43 @@ class SubscriptionController {
     });
 
     return res.json(subscription);
+  }
+
+  async delete(req, res) {
+    /**
+     * Subscription validation
+     */
+    const subscription = await Subscription.findOne({
+      where: {
+        id: req.params.id,
+        user_id: req.userId,
+      },
+    });
+
+    if (!subscription) {
+      return res
+        .status(401)
+        .json({ error: 'Cannot cancel meetups that you are not subscribbed' });
+    }
+
+    /**
+     * Validation to delete only meetups with more than 24 hours in advance
+     */
+    const meetup = await Meetup.findByPk(subscription.meetup_id);
+
+    const subDate = subHours(meetup.date, 24);
+
+    if (isBefore(subDate, new Date())) {
+      return res.status(401).json({
+        error: 'You can only cancel meetups subscriptions 24 Hours in advance.',
+      });
+    }
+
+    const deleted = await Subscription.destroy({
+      where: { id: subscription.id },
+    });
+
+    return res.json(deleted);
   }
 }
 
