@@ -16,12 +16,16 @@ class SubscriptionController {
      */
     const subscriptions = await Meetup.findAll({
       where: { date: { [Op.gte]: subDays(new Date(), 1) } },
-      attributes: ['title', 'description', 'location', 'date', 'file_id'],
+      attributes: ['id', 'title', 'description', 'location', 'date', 'file_id'],
       order: ['date'],
       include: [
         {
           model: Subscription,
           where: { user_id: req.userId },
+        },
+        {
+          model: User,
+          attributes: ['id', 'name'],
         },
         {
           model: File,
