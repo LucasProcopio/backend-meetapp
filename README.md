@@ -42,7 +42,7 @@ yarn
 ```
 
 - create a **database** with the same name set in the `.env` file make sure you use encoding UTF8
-  - run yarn sequelize db:migrate
+  - run `yarn sequelize db:migrate`
 - Start the server by running `yarn dev`
 - Start the mailing server by running `yarn queue`
 
