@@ -1,4 +1,4 @@
-# lumeet-app
+# backend-meetapp
 
 - An event aggregator API for developers LuMeetApp (Meetup + App)
 
