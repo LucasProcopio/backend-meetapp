@@ -27,6 +27,8 @@ class SubscriptionController {
         {
           model: Subscription,
           where: { user_id: req.userId },
+          attributes: ['id'],
+          as: 'subscription',
         },
         {
           model: User,
